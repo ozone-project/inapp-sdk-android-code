@@ -160,6 +160,11 @@ class FirstFragment : Fragment(), LocationListener {
         TargetingParams.setStoreUrl("google play store url here")
         TargetingParams.setBundleName("this is the bundleName")
         TargetingParams.setAppPageName("https://www.ardm.io/news")
+        TargetingParams.setSubjectToCOPPA(false) // false by default
+
+        // OMSDK settings, optional - see https://docs.prebid.org/prebid-mobile/pbm-api/android/pbm-targeting-params-android.html
+        TargetingParams.setUserAge(99)
+        TargetingParams.setGender(TargetingParams.GENDER.FEMALE)
 
 
         // Prebid docs: https://docs.prebid.org/prebid-mobile/prebid-mobile-privacy-regulation.html
