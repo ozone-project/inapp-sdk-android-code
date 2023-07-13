@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/FirstFragment"
         android:name="com.ozoneproject.OzoneAndroidDemo.FirstFragment"
-        android:label="@string/first_fragment_label"
+        android:label="Banner Ad"
         tools:layout="@layout/fragment_first">
 
         <action
@@ -18,11 +18,19 @@
     <fragment
         android:id="@+id/SecondFragment"
         android:name="com.ozoneproject.OzoneAndroidDemo.SecondFragment"
-        android:label="@string/second_fragment_label"
+        android:label="Outstream Ad"
         tools:layout="@layout/fragment_second">
-
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
+            android:id="@+id/action_SecondFragment_to_thirdFragment"
+            app:destination="@id/thirdFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/thirdFragment"
+        android:name="com.ozoneproject.OzoneAndroidDemo.ThirdFragment"
+        android:label="Instream Ad"
+        tools:layout="@layout/fragment_third">
+        <action
+            android:id="@+id/action_thirdFragment_to_FirstFragment"
             app:destination="@id/FirstFragment" />
     </fragment>
 </navigation>

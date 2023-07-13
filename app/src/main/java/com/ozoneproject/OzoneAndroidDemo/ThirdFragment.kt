@@ -14,9 +14,11 @@ import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.ads.interactivemedia.v3.api.AdsLoader
+import com.google.ads.interactivemedia.v3.api.AdsManager
+import com.google.ads.interactivemedia.v3.api.ImaSdkFactory
 import com.google.android.gms.ads.admanager.AdManagerAdRequest
-import com.ozoneproject.OzoneAndroidDemo.R
-import com.ozoneproject.OzoneAndroidDemo.databinding.FragmentSecondBinding
+import com.ozoneproject.OzoneAndroidDemo.databinding.FragmentThirdBinding
 import org.prebid.mobile.BannerAdUnit
 import org.prebid.mobile.BannerParameters
 import org.prebid.mobile.Host
@@ -26,19 +28,59 @@ import org.prebid.mobile.TargetingParams
 import org.prebid.mobile.api.data.InitializationStatus
 
 
-private const val TAG = "SecondFragment"
+import android.widget.MediaController;
+import android.widget.VideoView;
+
+
+import com.google.android.exoplayer2.ui.PlayerView
+
+
+// assembled from https://developers.google.com/interactive-media-ads/docs/sdks/android/client-side
+
+
+private const val TAG = "ThirdFragment"
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
  */
-class SecondFragment : Fragment(), LocationListener {
+class ThirdFragment : Fragment(), LocationListener {
 
-    private var _binding: FragmentSecondBinding? = null
+    private var _binding: FragmentThirdBinding? = null
+    private var SAMPLE_VIDEO_URL = "https://storage.googleapis.com/gvabox/media/samples/stock.mp4"
+
+    /**
+     * IMA sample tag for a single skippable inline video ad. See more IMA sample tags at
+     * https://developers.google.com/interactive-media-ads/docs/sdks/html5/client-side/tags
+     */
+    private val SAMPLE_VAST_TAG_URL =
+        ("https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/"
+                + "single_preroll_skippable&sz=640x480&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast"
+                + "&unviewed_position_start=1&env=vp&impl=s&correlator=")
+
+    // Factory class for creating SDK objects.
+    private val sdkFactory: ImaSdkFactory? = null
+
+    // The AdsLoader instance exposes the requestAds method.
+    private val adsLoader: AdsLoader? = null
+
+    // AdsManager exposes methods to control ad playback and listen to ad events.
+    private val adsManager: AdsManager? = null
+
+    // The saved content position, used to resumed content following an ad break.
+    private val savedPosition = 0
+
+    // This sample uses a VideoView for content and ad playback. For production
+    // apps, Android's Exoplayer offers a more fully featured player compared to
+    // the VideoView.
+    private val videoPlayer: VideoView? = null
+    private val mediaController: MediaController? = null
+    private val playButton: View? = null
+    private val videoAdPlayerAdapter: VideoAdPlayerAdapter? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
 
-    // NOTE to request a video ad you request 300x179 from prebid, then display in a 300x250 banner ad slot
+    // NOTE to request an instream video from prebid
     companion object {
         const val CONFIG_ID = "8000000328"
         const val WIDTH = 300
@@ -52,11 +94,15 @@ class SecondFragment : Fragment(), LocationListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // now add the elements from point 9 in https://developers.google.com/interactive-media-ads/docs/sdks/android/client-side
+
+
     }
 
     override fun onPause() {
         super.onPause()
-        Log.d(TAG,"*** Pausing frag 2")
+        Log.d(TAG, "*** Pausing frag 3")
         adUnit?.stopAutoRefresh()
     }
 
@@ -65,7 +111,7 @@ class SecondFragment : Fragment(), LocationListener {
      */
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "*** resuming frag 2")
+        Log.d(TAG, "*** resuming frag 3")
         if(PrebidMobile.isSdkInitialized()) {
             // when switching back to this screen
             Log.d(TAG, "onResume: Going to load ad")
@@ -81,7 +127,7 @@ class SecondFragment : Fragment(), LocationListener {
         savedInstanceState: Bundle?
     ): View? {
 
-        _binding = FragmentSecondBinding.inflate(inflater, container, false)
+        _binding = FragmentThirdBinding.inflate(inflater, container, false)
         return binding.root
 
     }
@@ -90,8 +136,8 @@ class SecondFragment : Fragment(), LocationListener {
         super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "*** onViewCreated")
 
-        binding.buttonSecond.setOnClickListener {
-            findNavController().navigate(R.id.action_SecondFragment_to_thirdFragment)
+        binding.buttonThird.setOnClickListener {
+            findNavController().navigate(R.id.action_thirdFragment_to_FirstFragment)
         }
 
         PrebidMobile.initializeSdk(activity?.applicationContext) { status ->
@@ -111,6 +157,8 @@ class SecondFragment : Fragment(), LocationListener {
 
         // check whether the user allows geo location
         getLocation()
+
+        playerView = PlayerVie(requireContext())
 
         // 1. Create BannerAdUnit
         adUnit = BannerAdUnit(CONFIG_ID, WIDTH, HEIGHT)
@@ -143,14 +191,20 @@ class SecondFragment : Fragment(), LocationListener {
         TargetingParams.setOmidPartnerVersion("3.16.3")
         PrebidMobile.setShareGeoLocation(getLocationTrackingOK())
         if(getLocationTrackingOK()) {
-            TargetingParams.setUserLatLng(lastLocation?.latitude?.toFloat(), lastLocation?.longitude?.toFloat())
+            TargetingParams.setUserLatLng(
+                lastLocation?.latitude?.toFloat(),
+                lastLocation?.longitude?.toFloat()
+            )
         }
 
         // 4. Make a bid request to Prebid Server
         val request = AdManagerAdRequest.Builder().build()
         adUnit?.fetchDemand(request) {
             // inside the callback we will call for an ad. Prebid will have set the targeting keys
-            Log.d(TAG, "fetchDemand callback. request targeting is: " + request.customTargeting.toString())
+            Log.d(
+                TAG,
+                "fetchDemand callback. request targeting is: " + request.customTargeting.toString()
+            )
             // both of these have to be set the same way - either in xml or in code
             binding.adView.loadAd(request)
         }
@@ -201,9 +255,10 @@ class SecondFragment : Fragment(), LocationListener {
         Log.d(TAG, "onLocationChanged with location $location")
         Log.d(
             TAG, String.format(
-            "Lat:\t %f\nLong:\t %f\nAlt:\t %f\nBearing:\t %f", location.latitude,
-            location.longitude, location.altitude, location.bearing
-        ))
+                "Lat:\t %f\nLong:\t %f\nAlt:\t %f\nBearing:\t %f", location.latitude,
+                location.longitude, location.altitude, location.bearing
+            )
+        )
         lastLocation = location
     }
 
