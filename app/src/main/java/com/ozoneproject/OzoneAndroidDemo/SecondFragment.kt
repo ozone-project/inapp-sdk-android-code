@@ -17,6 +17,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.gms.ads.admanager.AdManagerAdRequest
 import com.ozoneproject.OzoneAndroidDemo.R
 import com.ozoneproject.OzoneAndroidDemo.databinding.FragmentSecondBinding
+import org.json.JSONObject
 import org.prebid.mobile.BannerAdUnit
 import org.prebid.mobile.BannerParameters
 import org.prebid.mobile.Host
@@ -131,7 +132,21 @@ class SecondFragment : Fragment(), LocationListener {
         TargetingParams.setDomain("ardm.io")
         TargetingParams.setStoreUrl("google play store url here")
         TargetingParams.setBundleName("this is the bundleName")
-        TargetingParams.setAppPageName("https://www.ardm.io/news")
+        TargetingParams.setAppPageName("https://www.ardm.io/sport")
+
+        TargetingParams.setPlacementId("8000000328")
+
+        adUnit?.ozoneSetImpAdUnitCode("mpu")
+        val jsonObj = JSONObject("""{
+            "section": "sport",
+            "pos":"mpu",
+            "keywords": [
+                "boxing", "soccer", "cricket"
+            ],
+            "oztestmode": "ios_test"
+            }
+        }""".trimIndent())
+        adUnit?.ozoneSetCustomDataTargeting(jsonObj);
 
 
         // Prebid docs: https://docs.prebid.org/prebid-mobile/prebid-mobile-privacy-regulation.html

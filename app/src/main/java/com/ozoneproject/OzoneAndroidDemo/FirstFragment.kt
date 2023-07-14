@@ -20,6 +20,7 @@ import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.admanager.AdManagerAdRequest
 import com.ozoneproject.OzoneAndroidDemo.R
 import com.ozoneproject.OzoneAndroidDemo.databinding.FragmentFirstBinding
+import org.json.JSONObject
 import org.prebid.mobile.BannerAdUnit
 import org.prebid.mobile.BannerParameters
 import org.prebid.mobile.Host
@@ -161,6 +162,20 @@ class FirstFragment : Fragment(), LocationListener {
         TargetingParams.setBundleName("this is the bundleName")
         TargetingParams.setAppPageName("https://www.ardm.io/news")
         TargetingParams.setSubjectToCOPPA(false) // false by default
+
+        TargetingParams.setPlacementId("8000000328")
+
+        adUnit?.ozoneSetImpAdUnitCode("mpu")
+        val jsonObj = JSONObject("""{
+            "section": "news",
+            "pos":"mpu",
+            "keywords": [
+                "news", "politics", "borris johnson", "rishi sunack"
+            ],
+            "oztestmode": "ios_test"
+            }
+        }""".trimIndent())
+        adUnit?.ozoneSetCustomDataTargeting(jsonObj);
 
         // OMSDK settings, optional - see https://docs.prebid.org/prebid-mobile/pbm-api/android/pbm-targeting-params-android.html
         TargetingParams.setUserAge(99)

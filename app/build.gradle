@@ -44,14 +44,10 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
     implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
     implementation files('libs/omsdk.jar')
-    implementation files('libs/PrebidMobile-admobAdapters.jar')
-    implementation files('libs/PrebidMobile-admobAdapters-sources.jar')
     implementation files('libs/PrebidMobile-core.jar')
     implementation files('libs/PrebidMobile-core-sources.jar')
     implementation files('libs/PrebidMobile-gamEventHandlers.jar')
     implementation files('libs/PrebidMobile-gamEventHandlers-sources.jar')
-    implementation files('libs/PrebidMobile-maxAdapters.jar')
-    implementation files('libs/PrebidMobile-maxAdapters-sources.jar')
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
