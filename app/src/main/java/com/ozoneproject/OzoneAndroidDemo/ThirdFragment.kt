@@ -33,6 +33,11 @@ import android.widget.VideoView;
 
 
 import com.google.android.exoplayer2.ui.PlayerView
+import org.prebid.mobile.AdSize
+import org.prebid.mobile.InStreamVideoAdUnit
+import org.prebid.mobile.ResultCode
+import org.prebid.mobile.Util
+import org.prebid.mobile.VideoParameters
 
 
 // assembled from https://developers.google.com/interactive-media-ads/docs/sdks/android/client-side
@@ -75,6 +80,7 @@ class ThirdFragment : Fragment(), LocationListener {
     private val mediaController: MediaController? = null
     private val playButton: View? = null
     private val videoAdPlayerAdapter: VideoAdPlayerAdapter? = null
+    private var playerView: PlayerView? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -86,7 +92,7 @@ class ThirdFragment : Fragment(), LocationListener {
         const val WIDTH = 300
         const val HEIGHT = 179
     }
-    private var adUnit: BannerAdUnit? = null
+    private var adUnit: InStreamVideoAdUnit? = null
     var lastLocation: Location? = null
     var locationPermissionGranted: Boolean = false
 
@@ -112,13 +118,6 @@ class ThirdFragment : Fragment(), LocationListener {
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "*** resuming frag 3")
-        if(PrebidMobile.isSdkInitialized()) {
-            // when switching back to this screen
-            Log.d(TAG, "onResume: Going to load ad")
-            createAd()
-        } else {
-            Log.d(TAG, "onResume: Not going to load ad")
-        }
     }
 
 
@@ -139,15 +138,8 @@ class ThirdFragment : Fragment(), LocationListener {
         binding.buttonThird.setOnClickListener {
             findNavController().navigate(R.id.action_thirdFragment_to_FirstFragment)
         }
-
-        PrebidMobile.initializeSdk(activity?.applicationContext) { status ->
-            if (status == InitializationStatus.SUCCEEDED) {
-                Log.d(TAG, "SDK initialized successfully!")
-            } else if (status == InitializationStatus.SERVER_STATUS_WARNING) {
-                Log.d(TAG, "Prebid server status check failed: $status\n${status.description}")
-            } else {
-                Log.e(TAG, "SDL initialization error : $status\n${status.description}")
-            }
+        binding.playButton.setOnClickListener {
+            createAd()
         }
 
     }
@@ -155,31 +147,40 @@ class ThirdFragment : Fragment(), LocationListener {
     // code snippets from prebid example https://docs.prebid.org/prebid-mobile/pbm-api/android/android-sdk-integration-gam-original-api.html
     private fun createAd() {
 
+        Log.d(TAG, "*** createAd")
         // check whether the user allows geo location
         getLocation()
 
-        playerView = PlayerVie(requireContext())
+        // https://docs.prebid.org/prebid-mobile/pbm-api/android/android-sdk-integration-gam-original-api.html#instream-video-api
+        // 1. Create VideoAdUnit
+        adUnit = InStreamVideoAdUnit(CONFIG_ID, WIDTH, HEIGHT)
 
-        // 1. Create BannerAdUnit
-        adUnit = BannerAdUnit(CONFIG_ID, WIDTH, HEIGHT)
-        adUnit?.setAutoRefreshInterval(30) // IF you want to auto refresh the ad
+        // 2. configure video parameters:
+        adUnit?.videoParameters = configureVideoParameters()
 
-        // 2. Configure banner parameters
-        val parameters = BannerParameters()
-        parameters.api = listOf(Signals.Api.MRAID_3, Signals.Api.OMID_1)
-        adUnit?.bannerParameters = parameters
+        // 3. init player view
+        playerView = PlayerView(requireContext())
+        val params = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 600)
+        binding.viewContainer.addView(playerView, params)
+
+        // 4. make a bid request to prebid server
+        adUnit?.fetchDemand { _: ResultCode?, keysMap: Map<String?, String?>? ->
+
+            // Prepare the creative URI
+            val sizes = HashSet<AdSize>()
+            sizes.add(AdSize(WIDTH, HEIGHT))
+            val prebidURL = Util.generateInstreamUriForGam(
+ // todo - finish off from https://docs.prebid.org/prebid-mobile/pbm-api/android/android-sdk-integration-gam-original-api.html#instream-video-api
+            )
+        }
+
+
+        // this seems all entirely wrong - we need to have an exoplayer, and use the google toolkit to handle ads (and call prebid first)
+
 
         // make changes for Ozone
         Log.d(TAG, "Setting Ozone vars")
 
-        PrebidMobile.setPrebidServerHost(Host.createCustomHost("https://elb.the-ozone-project.com/openrtb2/app"))
-        PrebidMobile.setCustomStatusEndpoint("https://elb.the-ozone-project.com/status")
-
-        PrebidMobile.setPrebidServerAccountId("OZONEGMG0001")
-        TargetingParams.setDomain("ardm.io")
-        TargetingParams.setStoreUrl("google play store url here")
-        TargetingParams.setBundleName("this is the bundleName")
-        TargetingParams.setAppPageName("https://www.ardm.io/news")
 
 
         // Prebid docs: https://docs.prebid.org/prebid-mobile/prebid-mobile-privacy-regulation.html
@@ -197,16 +198,30 @@ class ThirdFragment : Fragment(), LocationListener {
             )
         }
 
-        // 4. Make a bid request to Prebid Server
-        val request = AdManagerAdRequest.Builder().build()
-        adUnit?.fetchDemand(request) {
-            // inside the callback we will call for an ad. Prebid will have set the targeting keys
-            Log.d(
-                TAG,
-                "fetchDemand callback. request targeting is: " + request.customTargeting.toString()
+
+        // what to do here - need to show an exoplayer, playing a video, and first call prebid then gpt...
+
+        Log.d(TAG, "need to show an exoplayer, call prebid, call google & do the biz...")
+    }
+
+    // https://docs.prebid.org/prebid-mobile/pbm-api/android/android-sdk-integration-gam-original-api.html#instream-video-api
+    private fun configureVideoParameters(): VideoParameters {
+        return VideoParameters(listOf("video/x-flv", "video/mp4")).apply {
+            placement = Signals.Placement.InStream
+
+            api = listOf(
+                Signals.Api.VPAID_1,
+                Signals.Api.VPAID_2
             )
-            // both of these have to be set the same way - either in xml or in code
-            binding.adView.loadAd(request)
+
+            maxBitrate = 1500
+            minBitrate = 300
+            maxDuration = 30
+            minDuration = 5
+            playbackMethod = listOf(Signals.PlaybackMethod.AutoPlaySoundOn)
+            protocols = listOf(
+                Signals.Protocols.VAST_2_0
+            )
         }
     }
 

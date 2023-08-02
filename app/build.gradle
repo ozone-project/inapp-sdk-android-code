@@ -57,16 +57,12 @@ dependencies {
     implementation 'androidx.browser:browser:1.4.0'
     implementation 'androidx.media:media:1.6.0'
     implementation 'com.google.ads.interactivemedia.v3:interactivemedia:3.29.0'
-
     implementation files('libs/omsdk.jar')
-    implementation files('libs/PrebidMobile-admobAdapters.jar')
-    implementation files('libs/PrebidMobile-admobAdapters-sources.jar')
     implementation files('libs/PrebidMobile-core.jar')
     implementation files('libs/PrebidMobile-core-sources.jar')
     implementation files('libs/PrebidMobile-gamEventHandlers.jar')
     implementation files('libs/PrebidMobile-gamEventHandlers-sources.jar')
-    implementation files('libs/PrebidMobile-maxAdapters.jar')
-    implementation files('libs/PrebidMobile-maxAdapters-sources.jar')
+
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
@@ -78,27 +74,7 @@ dependencies {
 
 //    for instream
 
-//    latest = https://mvnrepository.com/artifact/com.google.android.exoplayer/exoplayer?repo=google
-    implementation 'com.google.android.exoplayer:exoplayer:2.19.0'
-    implementation 'com.google.android.exoplayer:exoplayer-core:2.19.0'
-    implementation 'com.google.android.exoplayer:exoplayer-ui:2.19.0'
-
-    // prebid demo = https://mvnrepository.com/artifact/com.google.android.exoplayer/exoplayer?repo=google
-//    implementation 'com.google.android.exoplayer:exoplayer:2.15.1'
-//    implementation 'com.google.android.exoplayer:exoplayer-core:2.15.1'
-//    implementation 'com.google.android.exoplayer:exoplayer-ui:2.15.1'
-
-
-//    implementation("com.google.android.exoplayer:exoplayer:2.19.0")
-//    implementation group: 'com.google.android.exoplayer', name: 'exoplayer', version: '2.19.0'
-//    implementation group: 'com.google.android.exoplayer', name: 'exoplayer-core', version: '2.19.0'
-//    implementation group: 'com.google.android.exoplayer', name: 'exoplayer-ui', version: '2.19.0'
-
-
-
-//    implementation "androidx.localbroadcastmanager:localbroadcastmanager:1.0.0"
-
-
+    implementation 'com.google.android.exoplayer:exoplayer:2.13.+'
 
 }
 

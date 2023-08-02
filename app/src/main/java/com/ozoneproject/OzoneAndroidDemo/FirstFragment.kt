@@ -106,7 +106,7 @@ class FirstFragment : Fragment(), LocationListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.d(TAG, "*** onViewCreated")
+        Log.d(TAG, "*** onViewCreated 1")
 
         getLocation()
         binding.buttonFirst.setOnClickListener {
@@ -117,6 +117,14 @@ class FirstFragment : Fragment(), LocationListener {
         MobileAds.setRequestConfiguration(
             RequestConfiguration.Builder().setTestDeviceIds(listOf("ABCDEF012345")).build()
         )
+
+        // make changes for Ozone
+        Log.d(TAG, "Setting Ozone vars")
+
+        PrebidMobile.setPrebidServerHost(Host.createCustomHost("https://elb.the-ozone-project.com/openrtb2/app"))
+        PrebidMobile.setCustomStatusEndpoint("https://elb.the-ozone-project.com/status")
+
+
 
         // from prebid code
         // get the application context form the main activity https://stackoverflow.com/questions/12659747/call-an-activity-method-from-a-fragment
@@ -129,6 +137,13 @@ class FirstFragment : Fragment(), LocationListener {
                 Log.e(TAG, "SDL initialization error : $status\n${status.description}")
             }
         }
+
+        PrebidMobile.setPrebidServerAccountId("OZONEGMG0001")
+        TargetingParams.setDomain("ardm.io")
+        TargetingParams.setStoreUrl("google play store url here")
+        TargetingParams.setBundleName("this is the bundleName")
+        TargetingParams.setAppPageName("https://www.ardm.io/news")
+        TargetingParams.setSubjectToCOPPA(false) // false by default
         // do not call the adserver, without prebid, eg:
         // val request = AdManagerAdRequest.Builder().build()
         //  binding.adView.loadAd(request)
@@ -149,18 +164,6 @@ class FirstFragment : Fragment(), LocationListener {
         parameters.api = listOf(Signals.Api.MRAID_3, Signals.Api.OMID_1)
         adUnit?.bannerParameters = parameters
 
-        // make changes for Ozone
-        Log.d(TAG, "Setting Ozone vars")
-
-        PrebidMobile.setPrebidServerHost(Host.createCustomHost("https://elb.the-ozone-project.com/openrtb2/app"))
-        PrebidMobile.setCustomStatusEndpoint("https://elb.the-ozone-project.com/status")
-
-        PrebidMobile.setPrebidServerAccountId("OZONEGMG0001")
-        TargetingParams.setDomain("ardm.io")
-        TargetingParams.setStoreUrl("google play store url here")
-        TargetingParams.setBundleName("this is the bundleName")
-        TargetingParams.setAppPageName("https://www.ardm.io/news")
-        TargetingParams.setSubjectToCOPPA(false) // false by default
 
         // OMSDK settings, optional - see https://docs.prebid.org/prebid-mobile/pbm-api/android/pbm-targeting-params-android.html
         TargetingParams.setUserAge(99)

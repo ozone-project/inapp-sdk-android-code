@@ -94,15 +94,6 @@ class SecondFragment : Fragment(), LocationListener {
             findNavController().navigate(R.id.action_SecondFragment_to_thirdFragment)
         }
 
-        PrebidMobile.initializeSdk(activity?.applicationContext) { status ->
-            if (status == InitializationStatus.SUCCEEDED) {
-                Log.d(TAG, "SDK initialized successfully!")
-            } else if (status == InitializationStatus.SERVER_STATUS_WARNING) {
-                Log.d(TAG, "Prebid server status check failed: $status\n${status.description}")
-            } else {
-                Log.e(TAG, "SDL initialization error : $status\n${status.description}")
-            }
-        }
 
     }
 
@@ -124,23 +115,9 @@ class SecondFragment : Fragment(), LocationListener {
         // make changes for Ozone
         Log.d(TAG, "Setting Ozone vars")
 
-        PrebidMobile.setPrebidServerHost(Host.createCustomHost("https://elb.the-ozone-project.com/openrtb2/app"))
-        PrebidMobile.setCustomStatusEndpoint("https://elb.the-ozone-project.com/status")
-
-        PrebidMobile.setPrebidServerAccountId("OZONEGMG0001")
-        TargetingParams.setDomain("ardm.io")
-        TargetingParams.setStoreUrl("google play store url here")
-        TargetingParams.setBundleName("this is the bundleName")
-        TargetingParams.setAppPageName("https://www.ardm.io/news")
+        TargetingParams.setAppPageName("https://www.ardm.io/sport")
 
 
-        // Prebid docs: https://docs.prebid.org/prebid-mobile/prebid-mobile-privacy-regulation.html
-        // these 2 should be set automatically in default shared preferences but Usercentrics seems not to set SubjectToGDPR
-//        TargetingParams.setSubjectToGDPR(true)  // see First Fragment
-//    TargetingParams.setGDPRConsentString("...") // see First Fragment
-//        TargetingParams.setPublisherName() // do not set this - it's not useful
-        TargetingParams.setOmidPartnerName("Google1")
-        TargetingParams.setOmidPartnerVersion("3.16.3")
         PrebidMobile.setShareGeoLocation(getLocationTrackingOK())
         if(getLocationTrackingOK()) {
             TargetingParams.setUserLatLng(lastLocation?.latitude?.toFloat(), lastLocation?.longitude?.toFloat())

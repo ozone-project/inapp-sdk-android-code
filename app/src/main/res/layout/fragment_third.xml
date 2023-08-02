@@ -39,16 +39,17 @@
                 android:gravity="center"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent" >
 
+                <ImageButton
+                    android:id="@+id/playButton"
+                    android:layout_width="133dp"
+                    android:layout_height="125dp"
+                    android:background="@null"
+                    android:contentDescription="Play"
+                    android:src="@drawable/play"/>
+            </RelativeLayout>
 
-            <ImageButton
-            android:id="@+id/playButton"
-            android:contentDescription="Play"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="PLAY"
-            android:background="@null" />
 
         </RelativeLayout>
 
