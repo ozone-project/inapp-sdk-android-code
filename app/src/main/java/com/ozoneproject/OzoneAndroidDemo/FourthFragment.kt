@@ -16,58 +16,36 @@ import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.ads.interactivemedia.v3.api.AdsManager
-import com.ozoneproject.OzoneAndroidDemo.databinding.FragmentThirdBinding
-import org.prebid.mobile.Signals
-import org.prebid.mobile.TargetingParams
-
-// NOTE that as of 2023-08 the exoplayer is deprecated.
-
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.SimpleExoPlayer
-import com.google.android.exoplayer2.source.MediaSource
-import com.google.android.exoplayer2.source.ProgressiveMediaSource
-import com.google.android.exoplayer2.source.ads.AdsMediaSource
-
-
-import com.google.android.exoplayer2.ui.PlayerView
-import com.google.android.exoplayer2.upstream.DataSource
-import com.google.android.exoplayer2.upstream.DataSpec
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.google.android.exoplayer2.ext.ima.ImaAdsLoader
-
+import androidx.media3.common.MediaItem
+import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DataSpec
+import androidx.media3.datasource.DefaultDataSourceFactory
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.ima.ImaAdsLoader
+import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import androidx.media3.exoplayer.source.ads.AdsMediaSource
+import androidx.media3.ui.PlayerView
+import com.ozoneproject.OzoneAndroidDemo.databinding.FragmentFourthBinding
+import org.json.JSONObject
 import org.prebid.mobile.AdSize
+import org.prebid.mobile.ExternalUserId
 import org.prebid.mobile.InStreamVideoAdUnit
 import org.prebid.mobile.ResultCode
+import org.prebid.mobile.Signals
+import org.prebid.mobile.TargetingParams
 import org.prebid.mobile.Util
 import org.prebid.mobile.VideoParameters
 
-import org.json.JSONObject
-
-
-// NOTE this fragment is not active in the app.
-
-// this uses exoplayer2 which is now deprecated in favour of androidx media3 player.
-// NOTE that you can't have an app that contains exoplayer2 and also androidx media3 because a lot of the code was lifted & shifted, so you get some confusion.
-// MIGRATION from exoplayer2 : https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide
-
-
-private const val TAG = "ThirdFragment"
+private const val TAG = "FourthFragment"
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
  */
-class ThirdFragment : Fragment(), LocationListener {
+class FourthFragment : Fragment(), LocationListener {
 
-    private var _binding: FragmentThirdBinding? = null
+    private var _binding: FragmentFourthBinding? = null
     private var SAMPLE_VIDEO_URL = "https://storage.googleapis.com/gvabox/media/samples/stock.mp4"
 
-    /**
-     * IMA sample tag for a single skippable inline video ad. See more IMA sample tags at
-     * https://developers.google.com/interactive-media-ads/docs/sdks/html5/client-side/tags
-     */
-    private val SAMPLE_VAST_TAG_URL =
-        ("https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/"
-                + "single_preroll_skippable&sz=640x480&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast"
-                + "&unviewed_position_start=1&env=vp&impl=s&correlator=")
 
     // The AdsLoader instance exposes the requestAds method.
     private var adsLoader: ImaAdsLoader? = null
@@ -87,7 +65,8 @@ class ThirdFragment : Fragment(), LocationListener {
 
     // NOTE to request an instream video from prebid
     companion object {
-        const val CONFIG_ID = "8000000328"
+        const val CONFIG_ID = "8000000328" // use this for instream 20230802
+//        const val CONFIG_ID = "7771070002"
         const val WIDTH = 640
         const val HEIGHT = 480
         const val AD_UNIT_ID = "/22037345/ozone-instream-test"
@@ -96,17 +75,23 @@ class ThirdFragment : Fragment(), LocationListener {
     var lastLocation: Location? = null
     var locationPermissionGranted: Boolean = false
     var adsUri: Uri? =null
-    var player: SimpleExoPlayer? = null
+    var player: ExoPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
     }
 
     override fun onPause() {
         super.onPause()
         Log.d(TAG, "*** Pausing frag 3")
-        adUnit?.stopAutoRefresh()
     }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        Log.e(TAG, " *** LOW MEMORY DETECTED *** ");
+    }
+
 
     /**
      * this is called after onViewCreated
@@ -122,28 +107,30 @@ class ThirdFragment : Fragment(), LocationListener {
         savedInstanceState: Bundle?
     ): View? {
 
-        _binding = FragmentThirdBinding.inflate(inflater, container, false)
+        _binding = FragmentFourthBinding.inflate(inflater, container, false)
         return binding.root
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "*** onViewCreated")
 
-        // check whether the user allows geo location
-        getLocation()
         binding.buttonThird.setOnClickListener {
-//            findNavController().navigate(R.id.action_)
+            findNavController().navigate(R.id.action_FourthFragment_to_SecondFragmentB)
         }
-        binding.playButtonFrag3.setOnClickListener {
+        binding.playButtonFrag4.setOnClickListener {
             createAd()
         }
+
     }
 
     // code snippets from prebid example https://docs.prebid.org/prebid-mobile/pbm-api/android/android-sdk-integration-gam-original-api.html
     private fun createAd() {
 
         Log.d(TAG, "*** createAd")
+        // check whether the user allows geo location
+        getLocation()
 
         // 1. Create VideoAdUnit
         adUnit = InStreamVideoAdUnit(CONFIG_ID, WIDTH, HEIGHT)
@@ -151,15 +138,18 @@ class ThirdFragment : Fragment(), LocationListener {
         // 2. configure video parameters:
         var videoParams: VideoParameters = configureVideoParameters()
         // now add the ozone-specific params
-        val jsonExt = JSONObject("""{
+        val jsonExt = JSONObject(
+            """{
             "context": "instream",
             "playerSize": [[640,480]],
             "format": [{"w": 640, "h":480}]
-            }""".trimMargin());
+            }""".trimMargin()
+        );
         videoParams.ozoneSetExt(jsonExt)
         adUnit?.videoParameters = videoParams
         adUnit?.ozoneSetImpAdUnitCode("video-ad") // this may not be needed in app context
-        val jsonObj = JSONObject("""{
+        val jsonObj = JSONObject(
+            """{
             "section": "sport",
             "pos":"video-ad",
             "keywords": [
@@ -167,10 +157,15 @@ class ThirdFragment : Fragment(), LocationListener {
             ],
             "oztestmode": "ios_test"
             }
-        }""".trimIndent())
+        }""".trimIndent()
+        )
 
         adUnit?.ozoneSetCustomDataTargeting(jsonObj)
 //        TargetingParams.setPlacementId("8000000328") // 20230124 - do not do this now; we use the placementId from the adunit configId
+
+        TargetingParams.setAppPageName("https://www.ardm.io/other_page")
+        TargetingParams.setSubjectToCOPPA(false) // false by default
+
 
         // 3. init player view
         playerView = PlayerView(requireContext())
@@ -181,10 +176,11 @@ class ThirdFragment : Fragment(), LocationListener {
         adUnit?.fetchDemand { _: ResultCode?, keysMap: Map<String?, String?>? ->
 
             Log.d(TAG, "fetchDemand got keys: " + keysMap.toString())
+            binding.outputInfo.text = "fetchDemand got keys: " + keysMap.toString()
             // 5. Prepare the creative URI
             val sizes = HashSet<AdSize>()
             sizes.add(AdSize(WIDTH, HEIGHT))
-            sizes.add(AdSize(400,300))
+            sizes.add(AdSize(400, 300))
             val prebidURL = Util.generateInstreamUriForGam(
                 AD_UNIT_ID, sizes, keysMap
             )
@@ -193,6 +189,7 @@ class ThirdFragment : Fragment(), LocationListener {
             // 6. Init the player
             initializePlayer()
         }
+
     }
 
     // https://docs.prebid.org/prebid-mobile/pbm-api/android/android-sdk-integration-gam-original-api.html#instream-video-api
@@ -221,15 +218,21 @@ class ThirdFragment : Fragment(), LocationListener {
 
         adsLoader = ImaAdsLoader.Builder(requireContext()).build()
 
-        val playerBuilder = SimpleExoPlayer.Builder(requireContext())
+        val playerBuilder = ExoPlayer.Builder(requireContext())
         player = playerBuilder.build()
         playerView!!.player = player
         adsLoader!!.setPlayer(player)
 
-        val uri = Uri.parse("https://storage.googleapis.com/gvabox/media/samples/stock.mp4")
+        val uri = Uri.parse(SAMPLE_VIDEO_URL)
+
+        /*
+        https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide#exoplayer
+        After migrating from ExoPlayer v2 to Media3, you may see a lot of unstable API lint errors. This may make it seem like Media3 is 'less stable' than ExoPlayer v2. This is not the case. The 'unstable' parts of the Media3 API have the same level of stability as the whole of the ExoPlayer v2 API surface, and the guarantees of the stable Media3 API surface are not available in ExoPlayer v2 at all. The difference is simply that a lint error now alerts you to the different levels of stability.
+         */
 
         val mediaItem = MediaItem.fromUri(uri)
-        val dataSourceFactory: DataSource.Factory = DefaultDataSourceFactory(requireContext(), getString(R.string.app_name))
+        val dataSourceFactory: DataSource.Factory =
+            DefaultDataSourceFactory(requireContext(), getString(R.string.app_name))
         val mediaSourceFactory = ProgressiveMediaSource.Factory(dataSourceFactory)
         val mediaSource: MediaSource = mediaSourceFactory.createMediaSource(mediaItem)
         val dataSpec = DataSpec(adsUri!!)

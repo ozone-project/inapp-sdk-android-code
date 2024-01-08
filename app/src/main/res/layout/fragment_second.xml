@@ -4,7 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.ozoneproject.OzoneAndroidDemo.SecondFragment">
+    tools:context="com.ozoneproject.OzoneAndroidDemo.SecondFragment"
+    android:gravity="center_horizontal"
+
+    >
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -22,31 +25,51 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+
+
         <TextView
             android:id="@+id/textview_second"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/lorem_ipsum_short"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/button_second" />
+            android:gravity="center_horizontal"
+            android:text="Outstream ad requested at 300x179, display in 300x179 with ads:adSize set to 300x250"
+            android:textAlignment="center"
+            android:textSize="18dip"
+            app:layout_constraintTop_toBottomOf="@id/button_second"
+            tools:layout_editor_absoluteX="16dp"
+            android:layout_marginTop="60dp"
+            />
 
+
+        <!-- ads:adSize must be set to 300x250, but outstream video will be 300x179 -->
+        <!--            android:layout_height="179dip"-->
+        <!--        android:layout_height="wrap_content"-->
         <com.google.android.gms.ads.AdView
             xmlns:ads="http://schemas.android.com/apk/res-auto"
             android:id="@+id/adView"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
+            android:layout_height="179dip"
             android:layout_centerHorizontal="true"
             ads:adSize="MEDIUM_RECTANGLE"
             ads:adUnitId="/22037345/inapp-test-adunit"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="20dp"
             app:layout_constraintTop_toBottomOf="@id/textview_second"
-            android:outlineAmbientShadowColor="@color/design_default_color_on_primary"
             >
         </com.google.android.gms.ads.AdView>
+
+        <TextView
+            android:id="@+id/textOutput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text=""
+            android:textAlignment="center"
+            android:textSize="12dip"
+            android:layout_marginTop="20dp"
+            app:layout_constraintTop_toBottomOf="@id/adView"
+            />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

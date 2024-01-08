@@ -6,27 +6,31 @@
     android:layout_height="match_parent"
     tools:context="com.ozoneproject.OzoneAndroidDemo.ThirdFragment">
 
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp">
 
-        <!--
 
-
-        Note this is not active in the app - it's using deprecated exoplayer2
-
-
-
-        -->
-
-
+        <TextView
+            android:id="@+id/playerDescription"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal"
+            android:text="Instream Banner ad : androidX media3"
+            android:textAlignment="center"
+            android:textSize="18dip"
+            app:layout_constraintTop_toBottomOf="@id/button_third"
+            tools:layout_editor_absoluteX="16dp"
+            android:layout_marginTop="60dp"
+            />
 
         <Button
             android:id="@+id/button_third"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="See Banner ad"
+            android:text="See 2 x outstream"
             app:layout_constraintBottom_toTopOf="@id/videoPlayerContainer"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
@@ -56,7 +60,7 @@
                 app:layout_constraintTop_toTopOf="parent">
 
                 <ImageButton
-                    android:id="@+id/playButtonFrag3"
+                    android:id="@+id/playButtonFrag4"
                     android:layout_width="133dp"
                     android:layout_height="125dp"
                     android:background="@null"
@@ -75,17 +79,20 @@
             app:layout_constraintBottom_toBottomOf="@+id/videoPlayerContainer"
             tools:layout_editor_absoluteX="16dp">
 
-            <TextView
-                android:id="@+id/playerDescription"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center_horizontal"
-                android:text="Instream Banner ad : exoplayer2"
-                android:textAlignment="center"
-                android:textSize="12dip" />
-
         </FrameLayout>
 
+        <TextView
+            android:id="@+id/outputInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="Click the play button to request bids and then call for an ad ..."
+            android:textAlignment="center"
+            android:textSize="12dip"
+            app:layout_constraintTop_toBottomOf="@id/videoPlayerContainer"
+            tools:layout_editor_absoluteX="16dp"
+            android:layout_marginTop="60dp"
+            />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

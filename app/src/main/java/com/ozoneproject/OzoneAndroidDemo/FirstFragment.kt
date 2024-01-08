@@ -20,8 +20,10 @@ import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.admanager.AdManagerAdRequest
 import com.ozoneproject.OzoneAndroidDemo.R
 import com.ozoneproject.OzoneAndroidDemo.databinding.FragmentFirstBinding
+import org.json.JSONObject
 import org.prebid.mobile.BannerAdUnit
 import org.prebid.mobile.BannerParameters
+import org.prebid.mobile.ExternalUserId
 import org.prebid.mobile.Host
 import org.prebid.mobile.PrebidMobile
 import org.prebid.mobile.Signals
@@ -45,7 +47,8 @@ class FirstFragment : Fragment(), LocationListener {
 
     // from prebid code
     companion object {
-        const val CONFIG_ID = "8000000328"
+//        const val CONFIG_ID = "8000000328"
+        const val CONFIG_ID = "7771070002"
         const val WIDTH = 300
         const val HEIGHT = 250
     }
@@ -79,6 +82,11 @@ class FirstFragment : Fragment(), LocationListener {
         super.onPause()
         Log.d(TAG,"*** Pausing frag 1")
         adUnit?.stopAutoRefresh()
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        Log.e(TAG, " *** LOW MEMORY DETECTED *** ");
     }
 
     /**
@@ -121,33 +129,13 @@ class FirstFragment : Fragment(), LocationListener {
         // make changes for Ozone
         Log.d(TAG, "Setting Ozone vars")
 
-        PrebidMobile.setPrebidServerHost(Host.createCustomHost("https://elb.the-ozone-project.com/openrtb2/app"))
-        PrebidMobile.setCustomStatusEndpoint("https://elb.the-ozone-project.com/status")
-
-
-
-        // from prebid code
-        // get the application context form the main activity https://stackoverflow.com/questions/12659747/call-an-activity-method-from-a-fragment
-        PrebidMobile.initializeSdk(activity?.applicationContext) { status ->
-            if (status == InitializationStatus.SUCCEEDED) {
-                Log.d(TAG, "SDK initialized successfully!")
-            } else if (status == InitializationStatus.SERVER_STATUS_WARNING) {
-                Log.d(TAG, "Prebid server status check failed: $status\n${status.description}")
-            } else {
-                Log.e(TAG, "SDL initialization error : $status\n${status.description}")
-            }
-        }
-
-        PrebidMobile.setPrebidServerAccountId("OZONEGMG0001")
-        TargetingParams.setDomain("ardm.io")
-        TargetingParams.setStoreUrl("google play store url here")
-        TargetingParams.setBundleName("this is the bundleName")
         TargetingParams.setAppPageName("https://www.ardm.io/news")
         TargetingParams.setSubjectToCOPPA(false) // false by default
         // do not call the adserver, without prebid, eg:
         // val request = AdManagerAdRequest.Builder().build()
         //  binding.adView.loadAd(request)
         // you will do this in the prebid fetchDemand call back function
+
 
     }
 
@@ -164,10 +152,7 @@ class FirstFragment : Fragment(), LocationListener {
         parameters.api = listOf(Signals.Api.MRAID_3, Signals.Api.OMID_1)
         adUnit?.bannerParameters = parameters
 
-
-        // OMSDK settings, optional - see https://docs.prebid.org/prebid-mobile/pbm-api/android/pbm-targeting-params-android.html
-        TargetingParams.setUserAge(99)
-        TargetingParams.setGender(TargetingParams.GENDER.FEMALE)
+        adUnit?.ozoneSetCustomDataTargeting(JSONObject("""{"testKey": "testVal1"}"""))
 
 
         // Prebid docs: https://docs.prebid.org/prebid-mobile/prebid-mobile-privacy-regulation.html
@@ -175,8 +160,6 @@ class FirstFragment : Fragment(), LocationListener {
         TargetingParams.setSubjectToGDPR(true)
 //    TargetingParams.setGDPRConsentString("...") // see https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#how-do-third-party-sdks-vendors-access-the-consent-information-in-app
 //        TargetingParams.setPublisherName() // do not set this - it's not useful
-        TargetingParams.setOmidPartnerName("Google1")
-        TargetingParams.setOmidPartnerVersion("3.16.3")
         PrebidMobile.setShareGeoLocation(getLocationTrackingOK())
         if(getLocationTrackingOK()) {
             Log.d(TAG, "setting location info in the auction call")
@@ -185,11 +168,14 @@ class FirstFragment : Fragment(), LocationListener {
             Log.d(TAG, "NOT going to set location info in the auction call")
         }
 
+        TargetingParams.storeExternalUserId(ExternalUserId("criteo.com", "f_oxPV9oSGRLb3FFJTJGbGdQOHZkWlNCZlV6WDh0T0R2YkZTalJ4NTd6U21LOE5sbTdOcXlJdDBlM3F0eVVRdk9HQ2xQdGlzSkZsWkxTQUttWGtPT3MxVlBLb3N6dmw3Wm8zbEF5WTglMkZBeU1UMjVxc3AzR2JWUkkyRklqQnppazlNeHpwMFVPcVlPZGIwYlEzbmpsem5pTFltNU9BJTNEJTNE", 1, null ))
+
         // 4. Make a bid request to Prebid Server
         val request = AdManagerAdRequest.Builder().build()
         adUnit?.fetchDemand(request) {
             // inside the callback we will call for an ad. Prebid will have set targeting keys on the request object, ready to send to the adserver.
             Log.d(TAG, "fetchDemand callback. request targeting is: " + request.customTargeting.toString())
+            binding.textOutput.text = "fetchDemand got targeting: " + request.customTargeting.toString()
             binding.adView.loadAd(request)
         }
     }
