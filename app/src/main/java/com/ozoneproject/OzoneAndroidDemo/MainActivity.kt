@@ -15,6 +15,10 @@ import com.ozoneproject.OzoneAndroidDemo.databinding.ActivityMainBinding
 import com.usercentrics.sdk.Usercentrics
 import com.usercentrics.sdk.UsercentricsBanner
 import com.usercentrics.sdk.UsercentricsOptions
+import org.prebid.mobile.Host
+import org.prebid.mobile.PrebidMobile
+import org.prebid.mobile.TargetingParams
+import org.prebid.mobile.api.data.InitializationStatus
 
 
 private const val TAG = "MainActivity"
@@ -34,6 +38,34 @@ class MainActivity : AppCompatActivity() {
 //        val options = UsercentricsOptions(settingsId = "SK7PP6qyLnU_P9") // CCPA
 
         Usercentrics.initialize(this, options)
+
+        Log.d(TAG, "setting global prebid values")
+        PrebidMobile.setPrebidServerHost(Host.createCustomHost("https://elb.the-ozone-project.com/openrtb2/app"))
+        PrebidMobile.setCustomStatusEndpoint("https://elb.the-ozone-project.com/status")
+
+        // from prebid code
+        // get the application context form the main activity https://stackoverflow.com/questions/12659747/call-an-activity-method-from-a-fragment
+        PrebidMobile.initializeSdk(applicationContext) { status ->
+            if (status == InitializationStatus.SUCCEEDED) {
+                Log.d(TAG, "initializeSdk: SDK initialized successfully!")
+            } else if (status == InitializationStatus.SERVER_STATUS_WARNING) {
+                Log.d(TAG, "initializeSdk: Prebid server status check failed: $status\n${status.description}")
+            } else {
+                Log.e(TAG, "initializeSdk: SDL initialization error : $status\n${status.description}")
+            }
+        }
+
+        PrebidMobile.setPrebidServerAccountId("OZONEGMG0001")
+        TargetingParams.setDomain("ardm.io")
+        TargetingParams.setStoreUrl("google play store url here")
+        TargetingParams.setBundleName("this is the bundleName")
+
+        // OMSDK settings, optional - see https://docs.prebid.org/prebid-mobile/pbm-api/android/pbm-targeting-params-android.html
+        TargetingParams.setUserAge(99)
+        TargetingParams.setGender(TargetingParams.GENDER.FEMALE)
+
+        TargetingParams.setOmidPartnerName("Google1")
+        TargetingParams.setOmidPartnerVersion("3.16.3")
 
         MobileAds.initialize(this) {}
 

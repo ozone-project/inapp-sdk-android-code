@@ -3,12 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
+    app:startDestination="@id/SecondFragment">
 
     <fragment
         android:id="@+id/FirstFragment"
         android:name="com.ozoneproject.OzoneAndroidDemo.FirstFragment"
-        android:label="@string/first_fragment_label"
+        android:label="Banner Ad"
         tools:layout="@layout/fragment_first">
 
         <action
@@ -18,11 +18,26 @@
     <fragment
         android:id="@+id/SecondFragment"
         android:name="com.ozoneproject.OzoneAndroidDemo.SecondFragment"
-        android:label="@string/second_fragment_label"
+        android:label="Outstream Ad"
         tools:layout="@layout/fragment_second">
-
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
+            android:id="@+id/action_SecondFragment_to_thirdFragment"
+            app:destination="@id/FourthFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/FourthFragment"
+        android:name="com.ozoneproject.OzoneAndroidDemo.FourthFragment"
+        android:label="Instream Ad" >
+        <action
+            android:id="@+id/action_FourthFragment_to_SecondFragmentB"
+            app:destination="@id/SecondFragmentB" />
+    </fragment>
+    <fragment
+        android:id="@+id/SecondFragmentB"
+        android:name="com.ozoneproject.OzoneAndroidDemo.SecondFragmentB"
+        android:label="Outstream x 2" >
+        <action
+            android:id="@+id/action_secondFragmentB_to_FirstFragment"
             app:destination="@id/FirstFragment" />
     </fragment>
 </navigation>

@@ -1,3 +1,4 @@
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
@@ -13,6 +14,8 @@ android {
         targetSdk 33
         versionCode 1
         versionName "1.0"
+
+        multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -33,7 +36,9 @@ android {
     buildFeatures {
         viewBinding true
     }
+
 }
+
 
 dependencies {
 
@@ -43,11 +48,17 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
     implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
+
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.browser:browser:1.4.0'
+    implementation 'androidx.media:media:1.6.0'
+    implementation 'com.google.ads.interactivemedia.v3:interactivemedia:3.29.0'
     implementation files('libs/omsdk.jar')
     implementation files('libs/PrebidMobile-core.jar')
     implementation files('libs/PrebidMobile-core-sources.jar')
     implementation files('libs/PrebidMobile-gamEventHandlers.jar')
     implementation files('libs/PrebidMobile-gamEventHandlers-sources.jar')
+
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
@@ -56,4 +67,29 @@ dependencies {
     implementation "com.usercentrics.sdk:usercentrics-ui:2.8.0"
     implementation "com.google.android.gms:play-services-location:18.0.0"
 
+
+    // for instream ads:
+
+    // from https://developers.google.com/interactive-media-ads/docs/sdks/android/client-side/exoplayer-extension
+    // this is what would be needed if you use the ThirdFragment page in this app - media playing using exoplayer2
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'com.google.android.exoplayer:exoplayer-core:2.19.0'
+    implementation 'com.google.android.exoplayer:exoplayer-ui:2.19.0'
+    implementation 'com.google.android.exoplayer:extension-ima:2.19.0'  // this is needed for ext.ima.ImaAdsLoader
+
+// because exoplayer2 is now deprecated see FragmentPage 4 that shows how to use androidx media3 instead
+// To migrate other projects from exoplayer2 Use the migration tool: https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide#exoplayer
+// Note that if you want to use their tool exoplayer2 should be at version 2.19.0
+
+	implementation 'androidx.media3:media3-exoplayer:1.1.0'
+    implementation 'androidx.media3:media3-ui:1.1.0'
+    implementation 'androidx.media3:media3-exoplayer-ima:1.1.0'  // this is needed for ext.ima.ImaAdsLoader
+
+
+    // https://docs.prebid.org/prebid-mobile/modules/rendering/android-sdk-integration-gam.html
+    // latest version: https://central.sonatype.com/search?q=prebid-mobile-sdk-gam-event-handlers
+//    implementation('org.prebid:prebid-mobile-sdk-gam-event-handlers:2.1.5')
+
 }
+
