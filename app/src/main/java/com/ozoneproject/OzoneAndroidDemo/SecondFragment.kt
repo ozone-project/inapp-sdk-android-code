@@ -14,16 +14,25 @@ import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.FullScreenContentCallback
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.admanager.AdManagerAdRequest
-import com.ozoneproject.OzoneAndroidDemo.R
 import com.ozoneproject.OzoneAndroidDemo.databinding.FragmentSecondBinding
 import org.prebid.mobile.BannerAdUnit
 import org.prebid.mobile.BannerParameters
-import org.prebid.mobile.Host
+import org.prebid.mobile.InterstitialAdUnit
 import org.prebid.mobile.PrebidMobile
 import org.prebid.mobile.Signals
 import org.prebid.mobile.TargetingParams
-import org.prebid.mobile.api.data.InitializationStatus
+import org.prebid.mobile.VideoParameters
+import java.util.Arrays
+
+// https://developers.google.com/admob/android/interstitial
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 
 
 /*
@@ -45,8 +54,10 @@ class SecondFragment : Fragment(), LocationListener {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private val parameters = BannerParameters()
-
+    private var parameters = BannerParameters()
+    private var interstitialBannerParams = BannerParameters()
+    private var interstitialVideoParams = VideoParameters(listOf("video/mp4"))
+    private var interstitialShown: Boolean = false
 
     // NOTE to request a video ad you request 300x179 from prebid, then display in a 300x250 banner ad slot
     companion object {
@@ -55,13 +66,45 @@ class SecondFragment : Fragment(), LocationListener {
         const val HEIGHT = 179
     }
     private var adUnit: BannerAdUnit? = null
+    private var interstitialAdUnit: InterstitialAdUnit? = null;
     var lastLocation: Location? = null
     var locationPermissionGranted: Boolean = false
-
-
+    private var mInterstitialAd: InterstitialAd? = null // https://developers.google.com/admob/android/interstitial
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        this.interstitialShown = false
+
+        mInterstitialAd?.fullScreenContentCallback = object: FullScreenContentCallback() {
+            override fun onAdClicked() {
+                // Called when a click is recorded for an ad.
+                Log.d(TAG, "Ad was clicked.")
+            }
+
+            override fun onAdDismissedFullScreenContent() {
+                // Called when ad is dismissed.
+                Log.d(TAG, "Ad dismissed fullscreen content.")
+                mInterstitialAd = null
+            }
+
+            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                // Called when ad fails to show.
+                Log.e(TAG, "Ad failed to show fullscreen content.")
+                mInterstitialAd = null
+            }
+
+            override fun onAdImpression() {
+                // Called when an impression is recorded for an ad.
+                Log.d(TAG, "Ad recorded an impression.")
+            }
+
+            override fun onAdShowedFullScreenContent() {
+                // Called when ad is shown.
+                Log.d(TAG, "Ad showed fullscreen content.")
+            }
+        }
+
     }
 
     override fun onLowMemory() {
@@ -76,16 +119,32 @@ class SecondFragment : Fragment(), LocationListener {
 //        adUnit?.stopAutoRefresh()
     }
 
+    private var context: Context? = null
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        this.context = context
+    }
+
     /**
      * this is called after onViewCreated
      */
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "*** resuming frag 2")
+
+        Log.d(TAG, "Setting test device ID")
+        RequestConfiguration.Builder().setTestDeviceIds(listOf("EE4361CC35F01AE142E261039CD1A893")).build()
         if(PrebidMobile.isSdkInitialized()) {
             // when switching back to this screen
-            Log.d(TAG, "onResume: Going to load ad")
-            createAd()
+            if(this.interstitialShown) {
+                Log.d(TAG, "onResume: Going to load ad")
+                createAd()
+            } else {
+                Log.d(TAG, "onResume: Going to load interstitial ad")
+                showInterstitial()
+                this.interstitialShown = true
+            }
         } else {
             Log.d(TAG, "onResume: Not going to load ad")
         }
@@ -125,6 +184,7 @@ class SecondFragment : Fragment(), LocationListener {
         // 2. Configure banner parameters
         parameters.api = listOf(Signals.Api.MRAID_3, Signals.Api.OMID_1)
         adUnit?.bannerParameters = parameters
+        adUnit?.ozoneSetImpAdUnitCode("mpu")
 
         // make changes for Ozone
         Log.d(TAG, "Setting Ozone vars")
@@ -144,6 +204,78 @@ class SecondFragment : Fragment(), LocationListener {
             // both of these have to be set the same way - either in xml or in code
             binding.textOutput.text = "fetchDemand got targeting: " + request.customTargeting.toString()
             binding.adView.loadAd(request)
+        }
+    }
+
+    private fun showInterstitial() {
+
+        // https://docs.prebid.org/prebid-mobile/modules/rendering/android-sdk-integration-gam.html#interstitial-api <-- note that this is for a newer version
+
+        // test using a different placementId for interstitial
+        interstitialAdUnit = InterstitialAdUnit("8000000328", 80, 80)
+
+        // 2. Configure banner parameters
+        interstitialBannerParams.api = listOf(Signals.Api.MRAID_1, Signals.Api.MRAID_2, Signals.Api.MRAID_3, Signals.Api.OMID_1 )
+        interstitialAdUnit?.bannerParameters = interstitialBannerParams
+
+//        interstitialVideoParams.protocols = listOf(Signals.Protocols.VAST_2_0)
+//        interstitialVideoParams.playbackMethod = listOf(Signals.PlaybackMethod.AutoPlaySoundOff)
+//        interstitialVideoParams.api = listOf(Signals.Api.MRAID_1, Signals.Api.MRAID_2, Signals.Api.MRAID_3, Signals.Api.OMID_1 )
+//        interstitialAdUnit?.videoParameters = interstitialVideoParams
+        interstitialAdUnit?.ozoneSetImpAdUnitCode("mpu")
+
+        // make changes for Ozone
+        Log.d(TAG, "Setting Ozone vars for interstitial")
+
+        TargetingParams.setAppPageName("https://www.ardm.io/sport")
+
+        PrebidMobile.setShareGeoLocation(getLocationTrackingOK())
+        if(getLocationTrackingOK()) {
+            TargetingParams.setUserLatLng(lastLocation?.latitude?.toFloat(), lastLocation?.longitude?.toFloat())
+        }
+
+        // 4. Make a bid request to Prebid Server
+        val request = AdManagerAdRequest.Builder().build()
+        interstitialAdUnit?.fetchDemand(request) {
+            // inside the callback we will call for an ad. Prebid will have set the targeting keys
+            Log.d(TAG, "fetchDemand callback for instl. request targeting is: " + request.customTargeting.toString())
+//            binding.interstitialAdView.setAdSize( AdSize(400, 800))
+//            binding.interstitialAdView.adUnitId = "/22037345/inapp-test-adunit"
+//            binding.interstitialAdView.loadAd(request)
+
+            // https://developers.google.com/admob/android/interstitial
+            // how to send a nullable var to a function that expects a non-nullable parameter
+            activity?.applicationContext?.let {
+                Log.d(TAG, "Going to load interstitial ad...")
+                InterstitialAd.load(it, "/22037345/inapp-test-adunit", request, object : InterstitialAdLoadCallback() {
+                    override fun onAdFailedToLoad(adError: LoadAdError) {
+                        Log.d(TAG, "Failed to load ad: " + adError.toString())
+                        mInterstitialAd = null
+                    }
+
+                    override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                        Log.d(TAG, "Ad was loaded.")
+                        mInterstitialAd = interstitialAd
+
+                        // If you are prefetching then you would do this at an appropriate time later...
+                        displayInterstitial()
+                    }
+                })
+            }
+        }
+    }
+
+    /**
+     * After the interstitial has been fetched, now display it:
+     */
+    private fun displayInterstitial() {
+        activity?.let {
+            if (mInterstitialAd != null) {
+                Log.d("TAG", "Showing the interstitial")
+                mInterstitialAd?.show(it)
+            } else {
+                Log.d("TAG", "The interstitial ad wasn't ready yet.")
+            }
         }
     }
 

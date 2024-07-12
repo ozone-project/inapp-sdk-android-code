@@ -145,11 +145,12 @@ class FirstFragment : Fragment(), LocationListener {
 
         // 1. Create BannerAdUnit
         adUnit = BannerAdUnit(CONFIG_ID, WIDTH, HEIGHT)
+//        adUnit = BannerAdUnit("", WIDTH, HEIGHT)
         adUnit?.setAutoRefreshInterval(30) // IF you want to auto refresh the ad. This makes a call to the Ozone prebid adserver each time.
 
         // 2. Configure banner parameters
         val parameters = BannerParameters()
-        parameters.api = listOf(Signals.Api.MRAID_3, Signals.Api.OMID_1)
+        parameters.api = listOf(Signals.Api.MRAID_1, Signals.Api.MRAID_2, Signals.Api.MRAID_3, Signals.Api.OMID_1)
         adUnit?.bannerParameters = parameters
 
         adUnit?.ozoneSetCustomDataTargeting(JSONObject("""{"testKey": "testVal1"}"""))

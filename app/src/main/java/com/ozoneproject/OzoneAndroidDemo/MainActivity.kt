@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        PrebidMobile.setPrebidServerAccountId("OZONEGMG0001")
+        PrebidMobile.setPrebidServerAccountId("OZONETEST001")
         TargetingParams.setDomain("ardm.io")
         TargetingParams.setStoreUrl("google play store url here")
         TargetingParams.setBundleName("this is the bundleName")

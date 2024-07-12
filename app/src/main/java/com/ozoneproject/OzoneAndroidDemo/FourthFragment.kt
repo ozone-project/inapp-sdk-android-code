@@ -198,8 +198,13 @@ class FourthFragment : Fragment(), LocationListener {
             placement = Signals.Placement.InStream
 
             api = listOf(
-                Signals.Api.VPAID_1,
-                Signals.Api.VPAID_2
+//                Signals.Api.VPAID_1,
+//                Signals.Api.VPAID_2
+                // Ozone want 3,5,6,7 to be sent (6 & 7 will be for video but you may be able to send all 4 always - check first)
+                Signals.Api.MRAID_1,
+                Signals.Api.MRAID_2,
+                Signals.Api.MRAID_3,
+                Signals.Api.OMID_1
             )
 
             maxBitrate = 1500
