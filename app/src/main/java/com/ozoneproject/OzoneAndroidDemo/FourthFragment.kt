@@ -37,6 +37,11 @@ import org.prebid.mobile.TargetingParams
 import org.prebid.mobile.Util
 import org.prebid.mobile.VideoParameters
 
+/**
+ * This displays an instream video ad (requested at 640x480) using androidx
+ */
+
+
 private const val TAG = "FourthFragment"
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -65,11 +70,14 @@ class FourthFragment : Fragment(), LocationListener {
 
     // NOTE to request an instream video from prebid
     companion object {
-        const val CONFIG_ID = "8000000328" // use this for instream 20230802
+//        const val CONFIG_ID = "8000000328" // use this for instream 20230802
+        const val CONFIG_ID = "1500000136" // use this for instream 20250731
 //        const val CONFIG_ID = "7771070002"
         const val WIDTH = 640
         const val HEIGHT = 480
-        const val AD_UNIT_ID = "/22037345/ozone-instream-test"
+//        const val AD_UNIT_ID = "/22037345/ozone-instream-test"
+        const val AD_UNIT_ID = "/22037345/inapp-test-adunit" // 20240731
+
     }
     private var adUnit: InStreamVideoAdUnit? = null
     var lastLocation: Location? = null
@@ -77,14 +85,16 @@ class FourthFragment : Fragment(), LocationListener {
     var adsUri: Uri? =null
     var player: ExoPlayer? = null
 
+    var mainActivity: MainActivity? = null // set this to the mainActivity reference before using it
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        mainActivity = requireActivity() as MainActivity
     }
 
     override fun onPause() {
         super.onPause()
-        Log.d(TAG, "*** Pausing frag 3")
+        Log.d(TAG, "*** Pausing frag 4")
     }
 
     override fun onLowMemory() {
@@ -99,6 +109,8 @@ class FourthFragment : Fragment(), LocationListener {
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "*** resuming frag 3")
+        // regenerate a valid new number for testgroup, where appropriate (check with Ozone - do you do this on every page view/load?)
+        mainActivity?.regenerateTestgroup()
     }
 
 
@@ -128,7 +140,7 @@ class FourthFragment : Fragment(), LocationListener {
     // code snippets from prebid example https://docs.prebid.org/prebid-mobile/pbm-api/android/android-sdk-integration-gam-original-api.html
     private fun createAd() {
 
-        Log.d(TAG, "*** createAd")
+        Log.d(TAG, "*** instream createAd")
         // check whether the user allows geo location
         getLocation()
 
@@ -155,14 +167,15 @@ class FourthFragment : Fragment(), LocationListener {
             "keywords": [
                 "boxing", "tyson fury", "anthony joshua", "eddie hearn"
             ],
-            "oztestmode": "ios_test"
+            "oztestmode": "ios_test",
+            "testgroup": ${mainActivity?.testgroup}
             }
         }""".trimIndent()
         )
 
+
         adUnit?.ozoneSetCustomDataTargeting(jsonObj)
 //        TargetingParams.setPlacementId("8000000328") // 20230124 - do not do this now; we use the placementId from the adunit configId
-
         TargetingParams.setAppPageName("https://www.ardm.io/other_page")
         TargetingParams.setSubjectToCOPPA(false) // false by default
 
@@ -171,6 +184,8 @@ class FourthFragment : Fragment(), LocationListener {
         playerView = PlayerView(requireContext())
         val params = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 600)
         binding.viewContainer.addView(playerView, params)
+
+        Log.d(TAG, "instream going to fetch demand")
 
         // 4. make a bid request to prebid server
         adUnit?.fetchDemand { _: ResultCode?, keysMap: Map<String?, String?>? ->
@@ -186,6 +201,7 @@ class FourthFragment : Fragment(), LocationListener {
             )
             adsUri = Uri.parse(prebidURL)
 
+            Log.d(TAG, "Going to initialize player")
             // 6. Init the player
             initializePlayer()
         }
@@ -215,6 +231,7 @@ class FourthFragment : Fragment(), LocationListener {
             protocols = listOf(
                 Signals.Protocols.VAST_2_0
             )
+
         }
     }
 

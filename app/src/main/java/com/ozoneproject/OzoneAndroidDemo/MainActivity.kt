@@ -10,6 +10,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.admanager.AdManagerAdRequest
 import com.ozoneproject.OzoneAndroidDemo.R
 import com.ozoneproject.OzoneAndroidDemo.databinding.ActivityMainBinding
 import com.usercentrics.sdk.Usercentrics
@@ -28,6 +29,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+
+    public var testgroup: Int = (0..99).random()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -139,6 +142,14 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration)
                 || super.onSupportNavigateUp()
+    }
+
+    public fun regenerateTestgroup() {
+        this.testgroup = (0..99).random()
+    }
+
+    public fun addTestgroupToAdserverTargeting(request: AdManagerAdRequest) {
+        request.customTargeting.putString("testgroup", this.testgroup.toString())
     }
 
 }

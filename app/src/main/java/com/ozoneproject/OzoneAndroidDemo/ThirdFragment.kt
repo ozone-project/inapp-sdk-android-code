@@ -98,8 +98,13 @@ class ThirdFragment : Fragment(), LocationListener {
     var adsUri: Uri? =null
     var player: SimpleExoPlayer? = null
 
+    var mainActivity: MainActivity? = null // set this to the mainActivity reference before using it
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mainActivity = requireActivity() as MainActivity
+
     }
 
     override fun onPause() {
@@ -114,6 +119,8 @@ class ThirdFragment : Fragment(), LocationListener {
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "*** resuming frag 3")
+        // regenerate a valid new number for testgroup, where appropriate (check with Ozone - do you do this on every page view/load?)
+        mainActivity?.regenerateTestgroup()
     }
 
 
@@ -165,9 +172,11 @@ class ThirdFragment : Fragment(), LocationListener {
             "keywords": [
                 "boxing", "tyson fury", "anthony joshua", "eddie hearn"
             ],
-            "oztestmode": "ios_test"
+            "oztestmode": "ios_test",
+            "testgroup": ${mainActivity?.testgroup}
             }
         }""".trimIndent())
+
 
         adUnit?.ozoneSetCustomDataTargeting(jsonObj)
 //        TargetingParams.setPlacementId("8000000328") // 20230124 - do not do this now; we use the placementId from the adunit configId

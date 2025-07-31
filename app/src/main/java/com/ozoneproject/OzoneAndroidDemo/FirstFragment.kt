@@ -56,7 +56,7 @@ class FirstFragment : Fragment(), LocationListener {
     var lastLocation: Location? = null
     var locationPermissionGranted: Boolean = false
 
-
+    var mainActivity: MainActivity? = null // set this to the mainActivity reference before using it
 
     // https://developer.android.com/training/permissions/requesting#kotlin
     // https://developer.android.com/training/basics/intents/result#kotlin
@@ -76,6 +76,7 @@ class FirstFragment : Fragment(), LocationListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mainActivity = requireActivity() as MainActivity
     }
 
     override fun onPause() {
@@ -95,6 +96,10 @@ class FirstFragment : Fragment(), LocationListener {
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "*** resuming frag 1")
+
+        // regenerate a valid new number for testgroup, where appropriate (check with Ozone - do you do this on every page view/load?)
+        mainActivity?.regenerateTestgroup()
+
         if(PrebidMobile.isSdkInitialized()) {
             // when switching back to this screen
             Log.d(TAG, "onResume: Going to load ad")
@@ -115,7 +120,6 @@ class FirstFragment : Fragment(), LocationListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "*** onViewCreated 1")
-
         getLocation()
         binding.buttonFirst.setOnClickListener {
             findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
@@ -146,14 +150,14 @@ class FirstFragment : Fragment(), LocationListener {
         // 1. Create BannerAdUnit
         adUnit = BannerAdUnit(CONFIG_ID, WIDTH, HEIGHT)
 //        adUnit = BannerAdUnit("", WIDTH, HEIGHT)
-        adUnit?.setAutoRefreshInterval(30) // IF you want to auto refresh the ad. This makes a call to the Ozone prebid adserver each time.
+//        adUnit?.setAutoRefreshInterval(30) // IF you want to auto refresh the ad. This makes a call to the Ozone prebid adserver each time.
 
         // 2. Configure banner parameters
         val parameters = BannerParameters()
         parameters.api = listOf(Signals.Api.MRAID_1, Signals.Api.MRAID_2, Signals.Api.MRAID_3, Signals.Api.OMID_1)
         adUnit?.bannerParameters = parameters
 
-        adUnit?.ozoneSetCustomDataTargeting(JSONObject("""{"testKey": "testVal1"}"""))
+        adUnit?.ozoneSetCustomDataTargeting(JSONObject("""{"testKey": "testVal1", "testgroup": ${mainActivity?.testgroup}}"""))
 
 
         // Prebid docs: https://docs.prebid.org/prebid-mobile/prebid-mobile-privacy-regulation.html
@@ -175,6 +179,11 @@ class FirstFragment : Fragment(), LocationListener {
         val request = AdManagerAdRequest.Builder().build()
         adUnit?.fetchDemand(request) {
             // inside the callback we will call for an ad. Prebid will have set targeting keys on the request object, ready to send to the adserver.
+            // We now need to also add the testgroup value manually, as this doesn't come back as a targeting key from the auction endpoint:
+//            request.customTargeting.putString("testgroup", mainActivity?.testgroup.toString())
+
+            mainActivity?.addTestgroupToAdserverTargeting(request)
+
             Log.d(TAG, "fetchDemand callback. request targeting is: " + request.customTargeting.toString())
             binding.textOutput.text = "fetchDemand got targeting: " + request.customTargeting.toString()
             binding.adView.loadAd(request)
@@ -190,7 +199,6 @@ class FirstFragment : Fragment(), LocationListener {
         Log.d(TAG, "getLocationTrackingOK : $locationPermissionGranted")
         return locationPermissionGranted
     }
-
 
     /**
      * See if we can get the users location, and if so store it in lastLocation

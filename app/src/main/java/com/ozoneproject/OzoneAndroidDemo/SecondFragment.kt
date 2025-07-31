@@ -33,6 +33,7 @@ import java.util.Arrays
 // https://developers.google.com/admob/android/interstitial
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+import org.json.JSONObject
 
 
 /*
@@ -59,6 +60,9 @@ class SecondFragment : Fragment(), LocationListener {
     private var interstitialVideoParams = VideoParameters(listOf("video/mp4"))
     private var interstitialShown: Boolean = false
 
+    var mainActivity: MainActivity? = null // set this to the mainActivity reference before using it
+
+
     // NOTE to request a video ad you request 300x179 from prebid, then display in a 300x250 banner ad slot
     companion object {
         const val CONFIG_ID = "8000000328"
@@ -73,6 +77,7 @@ class SecondFragment : Fragment(), LocationListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mainActivity = requireActivity() as MainActivity
 
         this.interstitialShown = false
 
@@ -132,6 +137,8 @@ class SecondFragment : Fragment(), LocationListener {
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "*** resuming frag 2")
+        // regenerate a valid new number for testgroup, where appropriate (check with Ozone - do you do this on every page view/load?)
+        mainActivity?.regenerateTestgroup()
 
         Log.d(TAG, "Setting test device ID")
         RequestConfiguration.Builder().setTestDeviceIds(listOf("EE4361CC35F01AE142E261039CD1A893")).build()
@@ -186,6 +193,9 @@ class SecondFragment : Fragment(), LocationListener {
         adUnit?.bannerParameters = parameters
         adUnit?.ozoneSetImpAdUnitCode("mpu")
 
+        adUnit?.ozoneSetCustomDataTargeting(JSONObject("""{"testgroup": ${mainActivity?.testgroup}}"""))
+
+
         // make changes for Ozone
         Log.d(TAG, "Setting Ozone vars")
 
@@ -200,6 +210,9 @@ class SecondFragment : Fragment(), LocationListener {
         val request = AdManagerAdRequest.Builder().build()
         adUnit?.fetchDemand(request) {
             // inside the callback we will call for an ad. Prebid will have set the targeting keys
+
+            mainActivity?.addTestgroupToAdserverTargeting(request)
+
             Log.d(TAG, "fetchDemand callback. request targeting is: " + request.customTargeting.toString())
             // both of these have to be set the same way - either in xml or in code
             binding.textOutput.text = "fetchDemand got targeting: " + request.customTargeting.toString()
@@ -224,6 +237,8 @@ class SecondFragment : Fragment(), LocationListener {
 //        interstitialAdUnit?.videoParameters = interstitialVideoParams
         interstitialAdUnit?.ozoneSetImpAdUnitCode("mpu")
 
+        interstitialAdUnit?.ozoneSetCustomDataTargeting(JSONObject("""{"testgroup": ${mainActivity?.testgroup}}"""))
+
         // make changes for Ozone
         Log.d(TAG, "Setting Ozone vars for interstitial")
 
@@ -236,12 +251,15 @@ class SecondFragment : Fragment(), LocationListener {
 
         // 4. Make a bid request to Prebid Server
         val request = AdManagerAdRequest.Builder().build()
+        mainActivity?.addTestgroupToAdserverTargeting(request)
         interstitialAdUnit?.fetchDemand(request) {
             // inside the callback we will call for an ad. Prebid will have set the targeting keys
             Log.d(TAG, "fetchDemand callback for instl. request targeting is: " + request.customTargeting.toString())
 //            binding.interstitialAdView.setAdSize( AdSize(400, 800))
 //            binding.interstitialAdView.adUnitId = "/22037345/inapp-test-adunit"
 //            binding.interstitialAdView.loadAd(request)
+
+            mainActivity?.addTestgroupToAdserverTargeting(request)
 
             // https://developers.google.com/admob/android/interstitial
             // how to send a nullable var to a function that expects a non-nullable parameter
