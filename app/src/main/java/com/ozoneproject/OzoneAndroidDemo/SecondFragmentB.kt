@@ -41,7 +41,7 @@ class SecondFragmentB : Fragment(), LocationListener {
     // NOTE to request a video ad you request 300x179 from prebid, then display in a 300x250 banner ad slot
     companion object {
         const val CONFIG_ID = "8000000328"
-        const val CONFIG_ID_2 = "0420420421"
+        const val CONFIG_ID_2 = "8000000328"
         const val WIDTH = 300
         const val HEIGHT = 179
     }

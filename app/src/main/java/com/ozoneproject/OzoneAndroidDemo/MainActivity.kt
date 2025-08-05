@@ -43,12 +43,12 @@ class MainActivity : AppCompatActivity() {
         Usercentrics.initialize(this, options)
 
         Log.d(TAG, "setting global prebid values")
-        PrebidMobile.setPrebidServerHost(Host.createCustomHost("https://elb.the-ozone-project.com/openrtb2/app"))
-        PrebidMobile.setCustomStatusEndpoint("https://elb.the-ozone-project.com/status")
+        // this is no longer used
+//        PrebidMobile.setPrebidServerHost(Host.createCustomHost("https://elb.the-ozone-project.com/openrtb2/app"))
+//        PrebidMobile.setCustomStatusEndpoint("https://elb.the-ozone-project.com/status")
 
-        // from prebid code
         // get the application context form the main activity https://stackoverflow.com/questions/12659747/call-an-activity-method-from-a-fragment
-        PrebidMobile.initializeSdk(applicationContext) { status ->
+        PrebidMobile.initializeSdk(applicationContext, "https://elb.the-ozone-project.com/openrtb2/app", { status ->
             if (status == InitializationStatus.SUCCEEDED) {
                 Log.d(TAG, "initializeSdk: SDK initialized successfully!")
             } else if (status == InitializationStatus.SERVER_STATUS_WARNING) {
@@ -56,12 +56,19 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Log.e(TAG, "initializeSdk: SDL initialization error : $status\n${status.description}")
             }
-        }
+        })
 
         PrebidMobile.setPrebidServerAccountId("OZONETEST001")
+        PrebidMobile.setPbsDebug(true) // sends test=1 to auction endpoint so you get all the server debug info
+        PrebidMobile.setLogLevel(PrebidMobile.LogLevel.DEBUG)
+        PrebidMobile.setTimeoutMillis(3000)
+
         TargetingParams.setDomain("ardm.io")
         TargetingParams.setStoreUrl("google play store url here")
         TargetingParams.setBundleName("this is the bundleName")
+        TargetingParams.setAppPageName("https://www.ardm.io/news")
+        TargetingParams.setSubjectToCOPPA(false) // false by default
+        TargetingParams.setSendSharedId(true) // new for 3.0.2
 
         // OMSDK settings, optional - see https://docs.prebid.org/prebid-mobile/pbm-api/android/pbm-targeting-params-android.html
         TargetingParams.setUserAge(99)

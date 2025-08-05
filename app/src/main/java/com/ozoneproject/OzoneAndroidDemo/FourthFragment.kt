@@ -36,6 +36,7 @@ import org.prebid.mobile.Signals
 import org.prebid.mobile.TargetingParams
 import org.prebid.mobile.Util
 import org.prebid.mobile.VideoParameters
+import java.util.HashSet
 
 /**
  * This displays an instream video ad (requested at 640x480) using androidx
@@ -70,14 +71,10 @@ class FourthFragment : Fragment(), LocationListener {
 
     // NOTE to request an instream video from prebid
     companion object {
-//        const val CONFIG_ID = "8000000328" // use this for instream 20230802
         const val CONFIG_ID = "1500000136" // use this for instream 20250731
-//        const val CONFIG_ID = "7771070002"
         const val WIDTH = 640
         const val HEIGHT = 480
-//        const val AD_UNIT_ID = "/22037345/ozone-instream-test"
         const val AD_UNIT_ID = "/22037345/inapp-test-adunit" // 20240731
-
     }
     private var adUnit: InStreamVideoAdUnit? = null
     var lastLocation: Location? = null
@@ -188,21 +185,19 @@ class FourthFragment : Fragment(), LocationListener {
         Log.d(TAG, "instream going to fetch demand")
 
         // 4. make a bid request to prebid server
-        adUnit?.fetchDemand { _: ResultCode?, keysMap: Map<String?, String?>? ->
 
-            Log.d(TAG, "fetchDemand got keys: " + keysMap.toString())
-            binding.outputInfo.text = "fetchDemand got keys: " + keysMap.toString()
-            // 5. Prepare the creative URI
+        // 3.0.2
+        adUnit?.fetchDemand {
             val sizes = HashSet<AdSize>()
-            sizes.add(AdSize(WIDTH, HEIGHT))
-            sizes.add(AdSize(400, 300))
-            val prebidURL = Util.generateInstreamUriForGam(
-                AD_UNIT_ID, sizes, keysMap
+            sizes.add(AdSize(640, 480))
+            adsUri = Uri.parse(
+                Util.generateInstreamUriForGam(
+                    "22037345/inapp-test-adunit",
+                    sizes,
+                    it.targetingKeywords
+                )
             )
-            adsUri = Uri.parse(prebidURL)
-
-            Log.d(TAG, "Going to initialize player")
-            // 6. Init the player
+            Log.d("Ozone loadAd uri for gam", adsUri.toString())
             initializePlayer()
         }
 
@@ -223,11 +218,11 @@ class FourthFragment : Fragment(), LocationListener {
                 Signals.Api.OMID_1
             )
 
-            maxBitrate = 1500
-            minBitrate = 300
-            maxDuration = 30
-            minDuration = 5
-            playbackMethod = listOf(Signals.PlaybackMethod.AutoPlaySoundOn)
+//            maxBitrate = 1500
+//            minBitrate = 300
+//            maxDuration = 30
+//            minDuration = 5
+            playbackMethod = listOf(Signals.PlaybackMethod.AutoPlaySoundOff)
             protocols = listOf(
                 Signals.Protocols.VAST_2_0
             )
@@ -249,7 +244,11 @@ class FourthFragment : Fragment(), LocationListener {
 
         /*
         https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide#exoplayer
-        After migrating from ExoPlayer v2 to Media3, you may see a lot of unstable API lint errors. This may make it seem like Media3 is 'less stable' than ExoPlayer v2. This is not the case. The 'unstable' parts of the Media3 API have the same level of stability as the whole of the ExoPlayer v2 API surface, and the guarantees of the stable Media3 API surface are not available in ExoPlayer v2 at all. The difference is simply that a lint error now alerts you to the different levels of stability.
+        After migrating from ExoPlayer v2 to Media3, you may see a lot of unstable API lint errors.
+        This may make it seem like Media3 is 'less stable' than ExoPlayer v2. This is not the case.
+        The 'unstable' parts of the Media3 API have the same level of stability as the whole of the ExoPlayer v2 API surface,
+        and the guarantees of the stable Media3 API surface are not available in ExoPlayer v2 at all.
+        The difference is simply that a lint error now alerts you to the different levels of stability.
          */
 
         val mediaItem = MediaItem.fromUri(uri)
@@ -270,6 +269,11 @@ class FourthFragment : Fragment(), LocationListener {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        adUnit?.destroy()
+        adsLoader?.setPlayer(null)
+        adsLoader?.release()
+        player?.release()
+
     }
 
     private fun getLocationTrackingOK(): Boolean {

@@ -42,6 +42,7 @@ import org.prebid.mobile.Util
 import org.prebid.mobile.VideoParameters
 
 import org.json.JSONObject
+import java.util.HashSet
 
 
 // NOTE this fragment is not active in the app.
@@ -187,21 +188,38 @@ class ThirdFragment : Fragment(), LocationListener {
         binding.viewContainer.addView(playerView, params)
 
         // 4. make a bid request to prebid server
-        adUnit?.fetchDemand { _: ResultCode?, keysMap: Map<String?, String?>? ->
+//        adUnit?.fetchDemand { _: ResultCode?, keysMap: Map<String?, String?>? ->
+//
+//            Log.d(TAG, "fetchDemand got keys: " + keysMap.toString())
+//            // 5. Prepare the creative URI
+//            val sizes = HashSet<AdSize>()
+//            sizes.add(AdSize(WIDTH, HEIGHT))
+//            sizes.add(AdSize(400,300))
+//            val prebidURL = Util.generateInstreamUriForGam(
+//                AD_UNIT_ID, sizes, keysMap
+//            )
+//            adsUri = Uri.parse(prebidURL)
+//
+//            // 6. Init the player
+//            initializePlayer()
+//        }
 
-            Log.d(TAG, "fetchDemand got keys: " + keysMap.toString())
-            // 5. Prepare the creative URI
+
+        // 3.0.2
+        adUnit?.fetchDemand {
             val sizes = HashSet<AdSize>()
-            sizes.add(AdSize(WIDTH, HEIGHT))
-            sizes.add(AdSize(400,300))
-            val prebidURL = Util.generateInstreamUriForGam(
-                AD_UNIT_ID, sizes, keysMap
+            sizes.add(AdSize(640, 480))
+            adsUri = Uri.parse(
+                Util.generateInstreamUriForGam(
+                    "1500000136",
+                    sizes,
+                    it.targetingKeywords
+                )
             )
-            adsUri = Uri.parse(prebidURL)
-
-            // 6. Init the player
+            Log.d("Ozone loadAd uri for gam", adsUri.toString())
             initializePlayer()
         }
+
     }
 
     // https://docs.prebid.org/prebid-mobile/pbm-api/android/android-sdk-integration-gam-original-api.html#instream-video-api

@@ -7,6 +7,8 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -47,8 +49,8 @@ class FirstFragment : Fragment(), LocationListener {
 
     // from prebid code
     companion object {
-//        const val CONFIG_ID = "8000000328"
-        const val CONFIG_ID = "7771070002"
+        const val CONFIG_ID = "8000000328"
+//        const val CONFIG_ID = "7771070002"
         const val WIDTH = 300
         const val HEIGHT = 250
     }
@@ -105,7 +107,13 @@ class FirstFragment : Fragment(), LocationListener {
             Log.d(TAG, "onResume: Going to load ad")
             createAd()
         } else {
-            Log.d(TAG, "onResume: Not going to load ad")
+            Log.d(TAG, "onResume: Not going to load ad - sdk is not initialized")
+
+            Handler(Looper.getMainLooper()).postDelayed({
+                // Code to run after 2 seconds
+                Log.d(TAG, "going to try to create an ad, hopefully prebid is initialized! Dont do this in production ... ")
+                createAd()
+            }, 2000) // delay in milliseconds
         }
     }
 
@@ -173,7 +181,8 @@ class FirstFragment : Fragment(), LocationListener {
             Log.d(TAG, "NOT going to set location info in the auction call")
         }
 
-        TargetingParams.storeExternalUserId(ExternalUserId("criteo.com", "f_oxPV9oSGRLb3FFJTJGbGdQOHZkWlNCZlV6WDh0T0R2YkZTalJ4NTd6U21LOE5sbTdOcXlJdDBlM3F0eVVRdk9HQ2xQdGlzSkZsWkxTQUttWGtPT3MxVlBLb3N6dmw3Wm8zbEF5WTglMkZBeU1UMjVxc3AzR2JWUkkyRklqQnppazlNeHpwMFVPcVlPZGIwYlEzbmpsem5pTFltNU9BJTNEJTNE", 1, null ))
+        TargetingParams.setSendSharedId(true)
+
 
         // 4. Make a bid request to Prebid Server
         val request = AdManagerAdRequest.Builder().build()

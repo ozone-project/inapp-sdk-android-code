@@ -54,10 +54,6 @@ dependencies {
     implementation 'androidx.media:media:1.6.0'
     implementation 'com.google.ads.interactivemedia.v3:interactivemedia:3.29.0'
     implementation files('libs/omsdk.jar')
-    implementation files('libs/PrebidMobile-core.jar')
-    implementation files('libs/PrebidMobile-core-sources.jar')
-    implementation files('libs/PrebidMobile-gamEventHandlers.jar')
-    implementation files('libs/PrebidMobile-gamEventHandlers-sources.jar')
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
@@ -91,5 +87,10 @@ dependencies {
     // latest version: https://central.sonatype.com/search?q=prebid-mobile-sdk-gam-event-handlers
 //    implementation('org.prebid:prebid-mobile-sdk-gam-event-handlers:2.1.5')
 
+
+
+    implementation(name: 'PrebidMobile-core-release', ext: 'aar')
+    implementation(name: 'PrebidMobile-gamEventHandlers-release', ext: 'aar')
+    implementation(name: 'PrebidMobile-release', ext: 'aar')
 }
 
