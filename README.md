@@ -41,12 +41,47 @@ parameters will be sent to the adserver which allow prebid ads to compete with o
 You will first need to add the Ozone prebid libraries to your Android project. 
 
 1. Download this demo app from https://github.com/ozone-project/inapp-sdk-android-code. This contains the Ozone prebid library files and the code demonstrates how to use them.
-2. Copy all the jar files from the demo app /libs directory into a directory in your app called /libs or whatever you want to call it
-3. Hilight all the files you just imported, right-click them and select 'Add as Library'
+2. Copy all the aar & jar files from the demo app /libs directory into a directory in your app called /libs
 
-All the Ozone prebid code will now be available to your app, and the code in FirstFragment.kt and SecondFragment.kt will all work in your application.
+### Files required (version 3.0.2)
+- libs/omsdk.jar
+- libs/PrebidMobile-core-release.aar
+- libs/PrebidMobile-gamEventHandlers-release.aar
+- libs/PrebidMobile-release.aar
 
-Take a look at the code in FirstFragment.kt and SecondFragment.kt to see the app initialising, configuring, requesting bids, then finally making the call to the adserver.
+### Drag these into the libs/ dir, select them all & right click 'import as library'
+
+In settings.gradle add `flatDir` like this:
+
+```
+dependencyResolutionManagement {
+  repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+  repositories {
+    google()
+    mavenCentral()
+    jcenter()
+    flatDir {
+      dirs 'app/libs'
+    }
+  }
+}
+```
+
+In `app/build.gradle` add in `dependencies`:
+
+```
+    implementation(name: 'PrebidMobile-core-release', ext: 'aar')
+    implementation(name: 'PrebidMobile-gamEventHandlers-release', ext: 'aar')
+    implementation(name: 'PrebidMobile-release', ext: 'aar')
+```
+
+Then from the menu: `File > Sync Project with Gradle Files`
+
+You should find that the project picks up the libraries correctly.
+
+All the Ozone prebid code will now be available to your app, and the code in the files in `app/src/main/java/com/ozoneproject/OzoneAndroidDemo` will give you an insight in to how to get header bidding working in your application.
+
+Take a look at the code in MainActivity.kt, FirstFragment.kt, SecondFragment.kt etc. to see the app initialising, configuring, requesting bids, then making the call to the adserver, and finally calling google adserver when the auction returns successfully.
 
 
 ## CMP - Customer Management Platform for requesting GDPR/USP consent 
